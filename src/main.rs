@@ -1,4 +1,22 @@
-use std::{collections::{BTreeMap, HashMap, VecDeque}, fmt::{self, write, Display, Formatter}};
+use std::collections::{BTreeMap, HashMap, VecDeque};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::fmt::{self, Display, Formatter};
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref ORDER_ID_COUNTER: AtomicU64 = AtomicU64::new(1000);
+    static ref TIMESTAMP_COUNTER: AtomicU64 = AtomicU64::new(1_700_000_000_000);
+}
+
+// gen a unique, increamenting order ID for demonstration purposes.
+fn generate_order_id() -> u64 {
+    ORDER_ID_COUNTER.fetch_add(1, Ordering::SeqCst)
+}
+
+// gen a unique, increamenting timestamp (in milliseconds)
+fn generate_timestamp() -> u64 {
+    TIMESTAMP_COUNTER.fetch_add(10, Ordering::SeqCst)
+}
 
 // For market order
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
