@@ -196,5 +196,67 @@ impl SymbolBook {
 
 
 fn main() {
-    print!("Hello, world!");
+    env_logger::init();
+
+    let symbol = "BTC-USD";
+    let mut engine = MatchingEngine::new();
+
+    println!("1. Establishing Initial BTC-USD Order Book");
+
+    // Asks (Sell)
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Sell,
+        price: 50020, 
+        quantity: 10, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Sell,
+        price: 50050, 
+        quantity: 5, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Sell,
+        price: 50020, 
+        quantity: 5, 
+        timestamp: generate_timestamp() 
+    });
+
+    // Bids (Buy)
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Buy,
+        price: 49980, 
+        quantity: 20, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Buy,
+        price: 49950, 
+        quantity: 15, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.add_order(Order { 
+        order_id: generate_order_id(),
+        symbol: symbol.to_string(),
+        side: Side::Buy,
+        price: 49980, 
+        quantity: 10, 
+        timestamp: generate_timestamp() 
+    });
+    
 }
