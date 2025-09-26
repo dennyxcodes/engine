@@ -39,6 +39,28 @@ impl Display for Order {
     }
     
 }
+
+#[derive(Debug)]
+pub struct Trade {
+    pub buy_order_id: u64,
+    pub sell_order_id: u64,
+    pub symbol: String,
+    pub price: u64,
+    pub quantity: u64,
+}
+
+impl Display for Trade {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} | Executed {} @ {} | Buy ID: {}, Sell ID: {}",
+            self.symbol, self.quantity,
+            self.price, self.buy_order_id,
+            self.sell_order_id
+        )
+    }
+}
+
 fn main() {
     print!("Hello, world!");
 }
