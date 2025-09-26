@@ -207,6 +207,11 @@ impl SymbolBook {
                 break;
             }
         }
+        
+        if incoming_order.quantity > 0 {
+            self.add_resting_order(incoming_order);
+        }
+        
         trades
     }
 
@@ -381,5 +386,63 @@ fn main() {
         quantity: 10, 
         timestamp: generate_timestamp() 
     });
+
+    engine.print_book(symbol);
+
+    println!("2. Test Matching (Incoming Buy Order)");
+    // Incoming Buy order at 50020, Qty 15
+    // Matches:
+    // 1. Resting Ask ID 1000 (50020 @ 10) - FULL FILL
+    // 2. Remaining Qty 5 matches Ask ID 1002 (50020 @ 5) - FULL FILL
+    engine.add_order(Order { 
+        order_id: generate_order_id(), 
+        symbol: symbol.to_string(), 
+        side: Side::Buy, 
+        price: 50020, 
+        quantity: 15, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.print_book(symbol);
+
+    println!("3. Test Matching (Incoming Sell Order - Price Crossing)");
+    // Incoming Sell order at 49900, Qty 35
+    // Matches:
+    // 1. Resting Bid ID 1003 (49980 @ 20) - FULL FILL
+    // 2. Remaining Qty 15 matches Bid ID 1005 (49980 @ 10) - FULL FILL
+    // 3. Remaining Qty 5 matches Bid ID 1004 (49950 @ 15) - PARTIAL FILL (Remaining 10 in book)
+    // 4. Remaining Qty 0. Order is done.
+    engine.add_order(Order { 
+        order_id: generate_order_id(), 
+        symbol: symbol.to_string(), 
+        side: Side::Sell, 
+        price: 49900, 
+        quantity: 35, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.print_book(symbol);
+
+    println!("4. Test Cancellation of Remaining Order (ID 1004)");
+    engine.cancel_order(1004, symbol);
+
+    engine.print_book(symbol);
+
+    println!("5. Test Order with No Match (Resting Order)");
+    // This Sell order is far away from the best Bid (49950)
+    engine.add_order(Order { 
+        order_id: generate_order_id(), 
+        symbol: symbol.to_string(), 
+        side: Side::Sell, 
+        price: 50500, 
+        quantity: 50, 
+        timestamp: generate_timestamp() 
+    });
+
+    engine.print_book(symbol);
+
+
+    // 6. Final Trade Summary
+    engine.print_all_trades();
     
 }
