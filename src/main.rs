@@ -19,6 +19,7 @@ pub struct Order {
     pub order_id: u64,
     pub symbol: String,
     pub side: Side,
+    pub price: f64,
     pub quantity: u64,
     pub timestamp: u64,
 }
