@@ -210,8 +210,113 @@ impl SymbolBook {
         trades
     }
 
+    pub fn print_book(&self, symbol: &str) {
+        println!("\n--- Order Book for {} ---", symbol);
+        println!("\n--- ASKS (Lowest Price) ---");
+        if self.asks.is_empty() {
+            println!("(Empty)");
+        } else {
+            for (price, level) in self.asks.iter() {
+                let total_qty: u64 = level.iter().map(|o| o.quantity).sum();
+                let num_orders = level.len();
+                println!("  [Price: {}] Total Qty: {} ({} orders)", price, total_qty, num_orders);
+                for order in level.iter() {
+                    println!("    -> {}", order);
+                }
+            }
+        }
+
+        println!("\n--- BIDS (Highest Price) ---");
+        if self.bids.is_empty() {
+            println!("(Empty)");
+        } else {
+            for (price, level) in self.bids.iter().rev() {
+                let total_qty: u64 = level.iter().map(|o| o.quantity).sum();
+                let num_orders = level.len();
+                println!("  [Price: {}] Total Qty: {} ({} orders)", price, total_qty, num_orders);
+                for order in level.iter() {
+                    println!("    -> {}", order);
+                }
+            }
+        }
+        println!("---------------------------------\n");
+    }
+
 }
 
+// Matching Engine Wrapper
+
+pub struct MatchingEngine {
+    books: HashMap<String, SymbolBook>,
+    trades: Vec<Trade>,
+}
+
+impl MatchingEngine {
+    pub fn new() -> Self {
+        MatchingEngine { 
+            books: HashMap::new(),
+            trades: Vec::new(),
+        }
+    }
+
+    fn get_or_create_book(&mut self, symbol: &str) -> &mut SymbolBook {
+        self.books.entry(symbol.to_string()).or_insert_with(SymbolBook::new)
+    }
+
+    pub fn add_order(&mut self, order: Order) {
+        println!("\n--- New Incoming Order ---");
+        println!("Processing: {}", order);
+
+        let symbol = order.symbol.clone();
+        let book = self.get_or_create_book(&symbol);
+        
+        let new_trades = book.process_order(order);
+
+        if !new_trades.is_empty() {
+            println!("--- Executed Trades ---");
+            for trade in &new_trades {
+                println!("  {}", trade);
+            }
+            self.trades.extend(new_trades);
+        } else {
+            println!("No immediate match found. Order resting in book.");
+        }
+    }
+
+    pub fn cancel_order(&mut self, order_id: u64, symbol: &str) {
+        println!("\n--- Attempting Cancellation (ID: {}) ---", order_id);
+        if let Some(book) = self.books.get_mut(symbol) {
+            if book.cancel_order(order_id) {
+                println!("Cancellation successful for ID {}.", order_id);
+            } else {
+                println!("Order ID {} not found in book.", order_id);
+            }
+        } else {
+            println!("Symbol {} not found.", symbol);
+        }
+    }
+
+     pub fn print_book(&self, symbol: &str) {
+        if let Some(book) = self.books.get(symbol) {
+            book.print_book(symbol);
+        } else {
+            println!("Order book for {} is empty or does not exist.", symbol);
+        }
+    }
+
+    pub fn print_all_trades(&self) {
+        println!("\n--- All Executed Trades ---");
+        if self.trades.is_empty() {
+            println!("No trades executed yet.");
+        } else {
+            for trade in &self.trades {
+                println!("{}", trade);
+            }
+        }
+        println!("---------------------------\n");
+    }
+        
+}
 
 fn main() {
     env_logger::init();
